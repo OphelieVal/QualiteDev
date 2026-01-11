@@ -28,7 +28,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 
 /**
- * TODO: Complete Javadoc
+ * Ressource RPC utilisée par le front pour opérer sur les produits.
+ *
+ * Délègue vers les clients REST internes pour effectuer les actions nécessaires.
  */
 
 @Path("/products")
@@ -37,15 +39,18 @@ public class ProductRpcResource {
 
     @Inject
     @RestClient
+    /** Client REST vers le product-registry (read). */
     private ProductRegistryService productRegistryService;
+
     @Inject
     @RestClient
+    /** Client REST vers le product-registry (command). */
     private ProductRegistryDomainService productRegistryDomainService;
 
     @POST
     @Path("/registerProduct")
     @Consumes(MediaType.APPLICATION_JSON)
-    public RestResponse<Void> registerProduct(RegisterProductCommandDto product) {
+    public RestResponse<Void> registerProduct(final RegisterProductCommandDto product) {
         final var res = productRegistryDomainService.registerProduct(product);
         if (res.getStatus() == Status.CREATED.getStatusCode()) {
             return RestResponse.ok();
@@ -58,7 +63,7 @@ public class ProductRpcResource {
     @Path("/updateProduct")
     @Consumes(MediaType.APPLICATION_JSON)
     @Blocking
-    public Uni<RestResponse<Void>> updateProduct(UpdateProductDto update) {
+    public Uni<RestResponse<Void>> updateProduct(final UpdateProductDto update) {
         if (update.id() == null || update.id().isEmpty()) {
             return Uni.createFrom().item(RestResponse.status(Status.BAD_REQUEST));
         }
@@ -106,7 +111,7 @@ public class ProductRpcResource {
     @POST
     @Path("/retireProduct")
     @Consumes(MediaType.APPLICATION_JSON)
-    public RestResponse<Void> retireProduct(RetireProductDto retire) {
+    public RestResponse<Void> retireProduct(final RetireProductDto retire) {
         if (retire.id() == null || retire.id().isEmpty()) {
             return RestResponse.status(Status.BAD_REQUEST);
         }
@@ -121,7 +126,7 @@ public class ProductRpcResource {
     @POST
     @Path("/viewProduct")
     @Consumes(MediaType.APPLICATION_JSON)
-    public RestResponse<ProductViewDto> viewProduct(ViewProductDto view) {
+    public RestResponse<ProductViewDto> viewProduct(final ViewProductDto view) {
         if (view.id() == null || view.id().isEmpty()) {
             return RestResponse.status(Status.BAD_REQUEST);
         }
@@ -136,7 +141,7 @@ public class ProductRpcResource {
     @POST
     @Path("/searchProducts")
     @Consumes(MediaType.APPLICATION_JSON)
-    public RestResponse<PaginatedProductListDto> searchProducts(SearchProductsDto search) {
+    public RestResponse<PaginatedProductListDto> searchProducts(final SearchProductsDto search) {
         final var res = productRegistryService.searchProducts(search.sku(), search.page(), search.size());
         if (res.getStatus() == Status.OK.getStatusCode()) {
             return RestResponse.ok(res.getEntity());

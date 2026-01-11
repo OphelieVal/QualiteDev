@@ -33,7 +33,8 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 /**
- * TODO: Complete Javadoc
+ * Poller partitionné qui lit périodiquement l'outbox et distribue
+ * les messages aux partitions pour traitement et projection.
  */
 
 @ApplicationScoped
@@ -61,21 +62,21 @@ public class OutboxPartitionedPoller {
 
     @Inject
     public OutboxPartitionedPoller(
-            OutboxRepository outboxRepository,
-            ProjectionDispatcher dispatcher,
-            ProductEventJpaMapper mapper) {
+            final OutboxRepository outboxRepository,
+            final ProjectionDispatcher dispatcher,
+            final ProductEventJpaMapper mapper) {
         this.outbox = outboxRepository;
         this.dispatcher = dispatcher;
         this.mapper = mapper;
     }
 
-    void onStart(@Observes StartupEvent event) {
+    void onStart(@Observes final StartupEvent event) {
         pollScheduler.scheduleWithFixedDelay(this::poll, 0, POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
         // TODO: Hey, log some info
         LOG.info("OutboxPartitionedPoller started with " + PARTITIONS + " partitions.");
     }
 
-    void onStop(@Observes ShutdownEvent event) {
+    void onStop(@Observes final ShutdownEvent event) {
         pollScheduler.shutdownNow();
         Arrays.stream(executors).forEach(ExecutorService::shutdownNow);
         // TODO: Hey, log some info
@@ -106,7 +107,7 @@ public class OutboxPartitionedPoller {
         }
     }
 
-    private void process(OutboxEntity outboxMsg) {
+    private void process(final OutboxEntity outboxMsg) {
         var ev = outboxMsg.getSourceEvent();
         try {
             if (ev.getEventVersion() == ProductEventVersion.V1.getValue()) {

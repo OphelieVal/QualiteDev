@@ -16,29 +16,43 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 /**
- * TODO: Complete Javadoc
+ * Service d'application responsable de l'enregistrement d'un nouveau produit.
+ *
+ * Crée l'agrégat, persiste l'état et publie l'événement de création via l'outbox.
  */
 
 @ApplicationScoped
 public class RegisterProductService {
-
-    ProductRepository repository;
-    EventLogRepository eventLog;
-    OutboxRepository outbox;
-
+    
+    private ProductRepository repository;
+    private EventLogRepository eventLog;
+    private OutboxRepository outbox;
+    
+    /**
+     * Constructeur avec injection de dépendances.
+     * @param repository
+     * @param eventLog
+     * @param outbox
+     */
     @Inject
     public RegisterProductService(
-        ProductRepository repository,
-        EventLogRepository eventLog,
-        OutboxRepository outbox
+        final ProductRepository repository,
+        final EventLogRepository eventLog,
+        final OutboxRepository outbox
     ) {
         this.repository = repository;
         this.eventLog = eventLog;
         this.outbox = outbox;
     }
 
+    /**
+     * Gère la commande d'enregistrement d'un produit.
+     * @param cmd
+     * @return
+     * @throws IllegalArgumentException
+     */
     @Transactional
-    public ProductId handle(RegisterProductCommand cmd) throws IllegalArgumentException {
+    public ProductId handle(final RegisterProductCommand cmd) throws IllegalArgumentException {
         if (repository.existsBySkuId(cmd.skuId())) {
             throw new IllegalArgumentException(String.format("SKU already exists: %s", cmd.skuId()));
         }
@@ -48,13 +62,41 @@ public class RegisterProductService {
                 cmd.skuId());
         // Save domain object
         repository.save(product);
-        EventEnvelope<ProductRegistered> evt = EventEnvelope.with(new ProductRegistered(product.getId(), product.getSkuId(), cmd.name(), cmd.description()), product.getVersion());
+        EventEnvelope<ProductRegistered> evt = EventEnvelope.with(new ProductRegistered(
+            product.getId(), product.getSkuId(), cmd.name(), cmd.description()), product.getVersion());
         // Appends event to the log
         final EventLogEntity persistedEvent = eventLog.append(evt);
         // Publish outbox
-        outbox.publish(OutboxEntity.Builder()
+        outbox.publish(
+            OutboxEntity.Builder()
                 .sourceEvent(persistedEvent)
-                .build());
+                .build()
+        );
         return product.getId();
+    }
+
+    // Access methods
+    public ProductRepository getRepository() {
+        return repository;
+    }
+
+    public void setRepository(final ProductRepository repository) {
+        this.repository = repository;
+    }
+
+    public EventLogRepository getEventLog() {
+        return eventLog;
+    }
+
+    public void setEventLog(final EventLogRepository eventLog) {
+        this.eventLog = eventLog;
+    }
+
+    public OutboxRepository getOutbox() {
+        return outbox;
+    }
+
+    public void setOutbox(final OutboxRepository outbox) {
+        this.outbox = outbox;
     }
 }

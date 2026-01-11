@@ -4,7 +4,8 @@ import org.ormi.priv.tfa.orderflow.kernel.product.ProductId;
 import org.ormi.priv.tfa.orderflow.kernel.product.SkuId;
 
 /**
- * TODO: Complete Javadoc
+ * Définit les commandes applicatives liées au produit 
+ * (enregistrement, mise à jour, retrait).
  */
 
 public sealed interface ProductCommand {
@@ -13,13 +14,7 @@ public sealed interface ProductCommand {
             String description,
             SkuId skuId) implements ProductCommand {
     }
-
-    public record RetireProductCommand(ProductId productId) implements ProductCommand {
-    }
-
-    public record UpdateProductNameCommand(ProductId productId, String newName) implements ProductCommand {
-    }
-
-    public record UpdateProductDescriptionCommand(ProductId productId, String newDescription) implements ProductCommand {
-    }
+    public record RetireProductCommand(ProductId productId) implements ProductCommand { }
+    public record UpdateProductNameCommand(ProductId productId, String newName) implements ProductCommand { }
+    public record UpdateProductDescriptionCommand(ProductId productId, String newDescription) implements ProductCommand { }
 }

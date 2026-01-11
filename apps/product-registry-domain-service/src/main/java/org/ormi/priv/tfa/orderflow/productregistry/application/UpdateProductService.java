@@ -17,29 +17,37 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 /**
- * TODO: Complete Javadoc
+ * Service d'application pour les commandes de mise à jour de produit.
+ *
+ * Traite les commandes de changement de nom ou de description, en enregistrant
+ * l'agrégat, en persistants l'événement et en publiant via l'outbox.
  */
 
 @ApplicationScoped
 public class UpdateProductService {
 
-    ProductRepository repository;
-    EventLogRepository eventLog;
-    OutboxRepository outbox;
+    private ProductRepository repository;
+    private EventLogRepository eventLog;
+    private OutboxRepository outbox;
 
     @Inject
     public UpdateProductService(
-        ProductRepository repository,
-        EventLogRepository eventLog,
-        OutboxRepository outbox
+        final ProductRepository repository,
+        final EventLogRepository eventLog,
+        final OutboxRepository outbox
     ) {
         this.repository = repository;
         this.eventLog = eventLog;
         this.outbox = outbox;
     }
 
+    /**
+     * Gère la commande de mise à jour du nom d'un produit.
+     * @param cmd
+     * @throws IllegalArgumentException
+     */
     @Transactional
-    public void handle(UpdateProductNameCommand cmd) throws IllegalArgumentException {
+    public void handle(final UpdateProductNameCommand cmd) throws IllegalArgumentException {
         Product product = repository.findById(cmd.productId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
         EventEnvelope<ProductNameUpdated> event = product.updateName(cmd.newName());
@@ -55,8 +63,13 @@ public class UpdateProductService {
         );
     }
 
+    /**
+     * Gère la commande de mise à jour de la description d'un produit.
+     * @param cmd
+     * @throws IllegalArgumentException
+     */
     @Transactional
-    public void handle(UpdateProductDescriptionCommand cmd) throws IllegalArgumentException {
+    public void handle(final UpdateProductDescriptionCommand cmd) throws IllegalArgumentException {
         Product product = repository.findById(cmd.productId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
         EventEnvelope<ProductDescriptionUpdated> event = product.updateDescription(cmd.newDescription());
@@ -70,5 +83,29 @@ public class UpdateProductService {
                 .sourceEvent(persistedEvent)
                 .build()
         );
+    }
+
+    public ProductRepository getRepository() {
+        return repository;
+    }
+
+    public void setRepository(ProductRepository repository) {
+        this.repository = repository;
+    }
+
+    public EventLogRepository getEventLog() {
+        return eventLog;
+    }
+
+    public void setEventLog(EventLogRepository eventLog) {
+        this.eventLog = eventLog;
+    }
+
+    public OutboxRepository getOutbox() {
+        return outbox;
+    }
+
+    public void setOutbox(OutboxRepository outbox) {
+        this.outbox = outbox;
     }
 }

@@ -15,6 +15,10 @@ import org.ormi.priv.tfa.orderflow.kernel.product.views.ProductSummary;
     uses = { ProductIdMapper.class, SkuIdMapper.class },
     unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
+
+/**
+ * Mapper interface pour convertir entre ProductSummary et ProductSummaryDto.
+ */
 public interface ProductSummaryDtoMapper {
     @Mapping(source = "id", target = "id")
     @Mapping(source = "skuId", target = "skuId")

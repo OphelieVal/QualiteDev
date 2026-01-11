@@ -9,7 +9,9 @@ import io.smallrye.mutiny.subscription.MultiEmitter;
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * TODO: Complete Javadoc
+ * Simple diffuseur en mémoire des événements produit pour le streaming côté lecture.
+ *
+ * Permet d'émettre des `ProductStreamElementDto` aux abonnés via SmallRye Mutiny.
  */
 
 @ApplicationScoped
@@ -17,10 +19,14 @@ public class ProductEventBroadcaster {
 
     private final CopyOnWriteArrayList<MultiEmitter<? super ProductStreamElementDto>> emitters = new CopyOnWriteArrayList<>();
 
-    public void broadcast(ProductStreamElementDto element) {
+    /** Diffuse un élément à tous les abonnés. */
+    public void broadcast(final ProductStreamElementDto element) {
         emitters.forEach(emitter -> emitter.emit(element));
     }
 
+    /**
+     * Retourne un flux multi pour s'abonner aux événements produits.
+     */
     public Multi<ProductStreamElementDto> stream() {
         return Multi.createFrom().emitter(emitter -> {
             emitters.add(emitter);

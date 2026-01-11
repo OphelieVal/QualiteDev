@@ -58,4 +58,5 @@ apps/**/bin
 src-gen
 
 megalinter-reports/
+report/
 .quarkus

@@ -17,7 +17,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * TODO: Complete Javadoc
+ * Entité JPA représentant l'agrégat `Product` dans le schéma de domaine.
+ *
+ * Stocke les champs persistés : nom, description, SKU, statut et version.
  */
 
 @Getter
@@ -29,20 +31,35 @@ import lombok.Setter;
     name = "products",
     indexes = {
         @Index(name = "ux_products_sku", columnList = "sku", unique = true)
-    })
+    }
+)
 public class ProductEntity {
+
+    private static final int LENGTH = 9;
+
+    /** Identifiant UUID de l'entité. */
     @Id
     @Column(name = "id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID id;
+
+    /** Nom du produit. */
     @Column(name = "name", nullable = false, columnDefinition = "text")
     private String name;
+
+    /** Description du produit. */
     @Column(name = "description", nullable = false, columnDefinition = "text")
     private String description;
-    @Column(name = "sku_id", nullable = false, updatable = false, length = 9, unique = true, columnDefinition = "varchar(9)")
+
+    /** Identifiant SKU du produit (conserver la longueur maximale définie). */
+    @Column(name = "sku_id", nullable = false, updatable = false, length = LENGTH, unique = true, columnDefinition = "varchar")
     private String skuId;
+
+    /** Statut du produit (ex : ACTIVE, RETIRED). */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "text")
     private ProductLifecycle status;
+
+    /** Version optimistic locking. */
     @Column(name = "version", nullable = false, columnDefinition = "bigint")
     private Long version;
 }

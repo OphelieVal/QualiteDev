@@ -29,13 +29,15 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
 
 /**
- * TODO: Complete Javadoc
+ * Ressource REST exposant les API de commande pour le product-registry
+ * (enregistrement, retrait et mise à jour des produits).
  */
 
 @Path("/products")
 @Produces(MediaType.APPLICATION_JSON)
 public class ProductRegistryCommandResource {
 
+    // Dépendances requises
     private final CommandDtoMapper mapper;
     private final RegisterProductService registerProductService;
     private final RetireProductService retireProductService;
@@ -43,47 +45,81 @@ public class ProductRegistryCommandResource {
 
     @Inject
     public ProductRegistryCommandResource(
-            CommandDtoMapper mapper,
-            RegisterProductService registerProductService,
-            RetireProductService retireProductService,
-            UpdateProductService updateProductService) {
+            final CommandDtoMapper mapper,
+            final RegisterProductService registerProductService,
+            final RetireProductService retireProductService,
+            final UpdateProductService updateProductService) {
         this.mapper = mapper;
         this.registerProductService = registerProductService;
         this.retireProductService = retireProductService;
         this.updateProductService = updateProductService;
     }
 
+    /**
+     * Enregistre un nouveau produit.
+     * @param cmd
+     * @param uriInfo
+     * @return
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public RestResponse<Void> registerProduct(RegisterProductCommandDto cmd, @Context UriInfo uriInfo) {
+    public RestResponse<Void> registerProduct(final RegisterProductCommandDto cmd,
+            final @Context UriInfo uriInfo) {
         final ProductId productId = registerProductService.handle(mapper.toCommand(cmd));
-        return RestResponse.created(
-                URI.create(uriInfo.getAbsolutePathBuilder().path("/products/" + productId.value()).build().toString()));
+        final URI location = uriInfo.getAbsolutePathBuilder()
+            .path("/products/" + productId.value())
+            .build();
+        return RestResponse.created(URI.create(location.toString()));
     }
 
+    /**
+     * Retire un produit existant.
+     * @param productId
+     * @return
+     */
     @DELETE
     @Path("/{id}")
-    public RestResponse<Void> retireProduct(@PathParam("id") String productId) {
-        retireProductService.retire(new RetireProductCommand(new ProductId(UUID.fromString(productId))));
+    public RestResponse<Void> retireProduct(final @PathParam("id") String productId) {
+        retireProductService.retire(
+            new RetireProductCommand(new ProductId(UUID.fromString(productId)))
+        );
         return RestResponse.noContent();
     }
 
+    /**
+     * Met à jour le nom d'un produit existant.
+     * @param productId
+     * @param params
+     * @return
+    */
     @PATCH
     @Path("/{id}/name")
     @Consumes(MediaType.APPLICATION_JSON)
-    public RestResponse<Void> updateProductName(@PathParam("id") String productId, UpdateProductNameParamsDto params) {
-        updateProductService
-                .handle(new UpdateProductNameCommand(new ProductId(UUID.fromString(productId)), params.name()));
+    public RestResponse<Void> updateProductName(final @PathParam("id") String productId,
+            final UpdateProductNameParamsDto params) {
+        updateProductService.handle(
+            new UpdateProductNameCommand(new ProductId(UUID.fromString(productId)), params.name())
+        );
         return RestResponse.noContent();
     }
 
+    /**
+     * Met à jour la description d'un produit existant.
+     * @param productId
+     * @param params
+     * @return
+    */
     @PATCH
     @Path("/{id}/description")
     @Consumes(MediaType.APPLICATION_JSON)
-    public RestResponse<Void> updateProductDescription(@PathParam("id") String productId,
-            UpdateProductDescriptionParamsDto params) {
-        updateProductService.handle(new UpdateProductDescriptionCommand(new ProductId(UUID.fromString(productId)),
-                params.description()));
+    public RestResponse<Void> updateProductDescription(final @PathParam("id") String productId,
+            final UpdateProductDescriptionParamsDto params) {
+        updateProductService.handle(
+            new UpdateProductDescriptionCommand(
+                new ProductId(UUID.fromString(productId)),
+                params.description()
+            )
+        );
         return RestResponse.noContent();
     }
 }

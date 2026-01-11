@@ -22,7 +22,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 /**
- * TODO: Complete Javadoc
+ * Ressource REST exposant les API de lecture des produits (recherche et détail).
  */
 
 @Path("/products")
@@ -36,10 +36,10 @@ public class ProductRegistryQueryResource {
 
     @Inject
     public ProductRegistryQueryResource(
-            ReadProductService readProductService,
-            ProductViewDtoMapper productViewDtoMapper,
-            ProductSummaryDtoMapper productSummaryDtoMapper,
-            ProductIdMapper productIdMapper) {
+            final ReadProductService readProductService,
+            final ProductViewDtoMapper productViewDtoMapper,
+            final ProductSummaryDtoMapper productSummaryDtoMapper,
+            final ProductIdMapper productIdMapper) {
         this.readProductService = readProductService;
         this.productViewDtoMapper = productViewDtoMapper;
         this.productSummaryDtoMapper = productSummaryDtoMapper;
@@ -48,9 +48,9 @@ public class ProductRegistryQueryResource {
 
     @GET
     public RestResponse<PaginatedProductListDto> searchProducts(
-            @QueryParam("sku") @DefaultValue("") String sku,
-            @QueryParam("page") int page,
-            @QueryParam("size") int size) {
+            @QueryParam("sku") @DefaultValue("") final String sku,
+            @QueryParam("page") final int page,
+            @QueryParam("size") final int size) {
         // TODO: Validation [Exercice 5]
         final SearchPaginatedResult result = readProductService.searchProducts(sku, page, size);
         final PaginatedProductListDto list = new PaginatedProductListDto(result.page().stream()
@@ -68,7 +68,7 @@ public class ProductRegistryQueryResource {
 
     @GET
     @Path("/{id}")
-    public RestResponse<ProductViewDto> getProductById(@PathParam("id") String id) {
+    public RestResponse<ProductViewDto> getProductById(final @PathParam("id") String id) {
         // TODO: Validation [Exercice 5]
         final var product = readProductService.findById(productIdMapper.map(UUID.fromString(id)));
         if (product.isEmpty()) {

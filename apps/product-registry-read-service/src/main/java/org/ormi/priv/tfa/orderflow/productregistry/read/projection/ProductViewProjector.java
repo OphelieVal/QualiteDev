@@ -22,13 +22,14 @@ import org.ormi.priv.tfa.orderflow.kernel.product.views.ProductView.ProductViewE
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * TODO: Complete Javadoc
+ * Projecteur qui applique les événements `ProductEventV1Envelope` pour créer
+ * ou mettre à jour la `ProductView` (read model).
  */
 @ApplicationScoped
 public class ProductViewProjector implements Projector<ProductView, ProductEventV1Envelope<?>> {
 
 	@Override
-	public ProjectionResult<ProductView> project(Optional<ProductView> current, ProductEventV1Envelope<?> ev) {
+	public ProjectionResult<ProductView> project(final Optional<ProductView> current, final ProductEventV1Envelope<?> ev) {
 		return switch (ev) {
 			case ProductRegisteredEnvelope pre -> handleProjection(current, pre);
 			case ProductRetiredEnvelope pre -> handleProjection(current, pre);
@@ -38,8 +39,8 @@ public class ProductViewProjector implements Projector<ProductView, ProductEvent
 		};
 	}
 
-	private ProjectionResult<ProductView> handleProjection(Optional<ProductView> current,
-			ProductRegisteredEnvelope ev) {
+	private ProjectionResult<ProductView> handleProjection(final Optional<ProductView> current,
+			final ProductRegisteredEnvelope ev) {
 		if (current.isPresent() && current.get().getStatus() == ProductLifecycle.ACTIVE) {
 			return ProjectionResult.failed("Product already exists and is active");
 		}
@@ -63,7 +64,7 @@ public class ProductViewProjector implements Projector<ProductView, ProductEvent
 		return ProjectionResult.projected(newView);
 	}
 
-	private ProjectionResult<ProductView> handleProjection(Optional<ProductView> current, ProductRetiredEnvelope ev) {
+	private ProjectionResult<ProductView> handleProjection(final Optional<ProductView> current, final ProductRetiredEnvelope ev) {
 		if (current.isEmpty() || current.get().getStatus() != ProductLifecycle.ACTIVE) {
 			return ProjectionResult.failed("Already retired or never existed");
 		}
@@ -84,8 +85,8 @@ public class ProductViewProjector implements Projector<ProductView, ProductEvent
 		return ProjectionResult.projected(newView);
 	}
 
-	private ProjectionResult<ProductView> handleProjection(Optional<ProductView> current,
-			ProductNameUpdatedEnvelope ev) {
+private ProjectionResult<ProductView> handleProjection(final Optional<ProductView> current,
+			final ProductNameUpdatedEnvelope ev) {
 		if (current.isEmpty() || current.get().getStatus() != ProductLifecycle.ACTIVE) {
 			return ProjectionResult.failed("Cannot update name of non-existent or retired product");
 		}
@@ -106,8 +107,8 @@ public class ProductViewProjector implements Projector<ProductView, ProductEvent
 		return ProjectionResult.projected(newView);
 	}
 
-	private ProjectionResult<ProductView> handleProjection(Optional<ProductView> current,
-			ProductDescriptionUpdatedEnvelope ev) {
+private ProjectionResult<ProductView> handleProjection(final Optional<ProductView> current,
+			final ProductDescriptionUpdatedEnvelope ev) {
 		if (current.isEmpty() || current.get().getStatus() != ProductLifecycle.ACTIVE) {
 			return ProjectionResult.failed("Cannot update description of non-existent or retired product");
 		}

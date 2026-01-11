@@ -8,7 +8,8 @@ import org.ormi.priv.tfa.orderflow.contracts.productregistry.v1.write.RegisterPr
 import org.ormi.priv.tfa.orderflow.kernel.product.SkuIdMapper;
 
 /**
- * TODO: Complete Javadoc
+ * MapStruct mapper convertissant entre le DTO HTTP et la commande de domaine
+ * `RegisterProductCommand`.
  */
 
 @Mapper(
@@ -18,6 +19,18 @@ import org.ormi.priv.tfa.orderflow.kernel.product.SkuIdMapper;
     unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface CommandDtoMapper {
-    public RegisterProductCommand toCommand(RegisterProductCommandDto dto);
-    public RegisterProductCommandDto toDto(RegisterProductCommand command);
+    
+    /**
+     * Convertit un DTO HTTP en commande de domaine.
+     * @param dto
+     * @return
+     */
+    RegisterProductCommand toCommand(RegisterProductCommandDto dto);
+
+    /**
+     * Convertit une commande de domaine en DTO HTTP.
+     * @param command
+     * @return
+     */
+    RegisterProductCommandDto toDto(RegisterProductCommand command);
 }

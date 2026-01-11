@@ -15,20 +15,29 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 /**
- * TODO: Complete Javadoc
+ * Service d'application pour rappeler (retirer) un produit.
+ *
+ * Gère la logique métier de retrait, la persistance et la publication
+ * de l'événement correspondant via l'outbox.
  */
 @ApplicationScoped
 public class RetireProductService {
 
+    // Dépendances requises
     @Inject
-    ProductRepository repository;
+    private ProductRepository repository;
     @Inject
-    EventLogRepository eventLog;
+    private EventLogRepository eventLog;
     @Inject
-    OutboxRepository outbox;
+    private OutboxRepository outbox;
 
+    /**
+     * Gère la commande de retrait d'un produit.
+     * @param cmd
+     * @throws IllegalArgumentException
+     */
     @Transactional
-    public void retire(RetireProductCommand cmd) throws IllegalArgumentException {
+    public void retire(final RetireProductCommand cmd) throws IllegalArgumentException {
         Product product = repository.findById(cmd.productId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
         EventEnvelope<ProductRetired> evt = product.retire();
@@ -36,8 +45,33 @@ public class RetireProductService {
         // Append event to the log
         final EventLogEntity persistedEvent = eventLog.append(evt);
         // Publish outbox
-        outbox.publish(OutboxEntity.Builder()
+        outbox.publish(
+            OutboxEntity.Builder()
                 .sourceEvent(persistedEvent)
-                .build());
+                .build()
+        );
+    }
+    public ProductRepository getRepository() {
+        return repository;
+    }
+
+    public void setRepository(final ProductRepository repository) {
+        this.repository = repository;
+    }
+
+    public EventLogRepository getEventLog() {
+        return eventLog;
+    }
+
+    public void setEventLog(final EventLogRepository eventLog) {
+        this.eventLog = eventLog;
+    }
+
+    public OutboxRepository getOutbox() {
+        return outbox;
+    }
+
+    public void setOutbox(final OutboxRepository outbox) {
+        this.outbox = outbox;
     }
 }

@@ -14,7 +14,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * TODO: Complete Javadoc
+ * Service de lecture exposant les opérations sur les vues produit : recherche,
+ * récupération par id et streaming d'événements liés aux produits.
  */
 
 @ApplicationScoped
@@ -25,28 +26,28 @@ public class ReadProductService {
 
     @Inject
     public ReadProductService(
-        ProductViewRepository repository,
-        ProductEventBroadcaster productEventBroadcaster) {
+        final ProductViewRepository repository,
+        final ProductEventBroadcaster productEventBroadcaster) {
         this.repository = repository;
         this.productEventBroadcaster = productEventBroadcaster;
     }
 
-    public Optional<ProductView> findById(ProductId productId) {
+    public Optional<ProductView> findById(final ProductId productId) {
         return repository.findById(productId);
     }
 
-    public SearchPaginatedResult searchProducts(String skuIdPattern, int page, int size) {
+    public SearchPaginatedResult searchProducts(final String skuIdPattern, final int page, final int size) {
         return new SearchPaginatedResult(
                 repository.searchPaginatedViewsOrderBySkuId(skuIdPattern, page, size),
                 repository.countPaginatedViewsBySkuIdPattern(skuIdPattern));
     }
 
-    public Multi<ProductStreamElementDto> streamProductEvents(ProductId productId) {
+    public Multi<ProductStreamElementDto> streamProductEvents(final ProductId productId) {
         return productEventBroadcaster.stream()
                 .select().where(e -> e.productId().equals(productId.value().toString()));
     }
 
-    public Multi<ProductStreamElementDto> streamProductListEvents(String skuIdPattern, int page, int size) {
+    public Multi<ProductStreamElementDto> streamProductListEvents(final String skuIdPattern, final int page, final int size) {
         final List<ProductView> products = searchProducts(skuIdPattern, page, size).page();
         final List<UUID> productIds = products.stream()
                 .map(p -> p.getId().value())
